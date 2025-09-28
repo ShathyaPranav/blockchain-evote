@@ -1,0 +1,89 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+artifacts/
+cache/
+typechain/
+typechain-types/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# RSA Keys (keep private!)
+*.pem
+*.key
+*.p12
+*.pfx
+authority_private_key.pem
+authority_public_key.pem
+private_key.pem
+public_key.pem
+
+# Wallet files
+*.json
+!package.json
+!package-lock.json
+!hardhat.config.js
+!**/test/*.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output
+
+# Hardhat
+.openzeppelin/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Flask
+instance/
+.webassets-cache
+
+# Database
+*.db
+*.sqlite
+
+# Hardhat artifacts
+deployments/
