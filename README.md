@@ -23,29 +23,17 @@ cd blockchain-evote
 npm install
 ▶️ Run Demo
 Start local blockchain:
-
-powershell
-Copy code
 npx hardhat node
 Deploy contract:
-
-powershell
-Copy code
 npx hardhat run scripts/deploy.js --network localhost
 Copy the deployed contract address.
 
 Generate keys:
-
-powershell
-Copy code
 openssl genpkey -algorithm RSA -out authority_private_key.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -pubout -in authority_private_key.pem -out authority_public_key.pem
 Paste public key into client/config.js.
 
 Run backend:
-
-powershell
-Copy code
 cd backend
 .\venv\Scripts\activate
 pip install -r requirements.txt
@@ -54,37 +42,27 @@ set CONTRACT_ADDRESS=0x...   # contract from step 2
 set PRIVATE_KEY_PATH=..\authority_private_key.pem
 set PROVIDER=http://127.0.0.1:8545
 flask run
+
 MetaMask:
-
 Add network → RPC http://127.0.0.1:8545, Chain ID 31337.
-
 Import one Hardhat account (private key printed in step 1).
 
 Cast votes:
-
 Open client/index.html in browser.
-
 Connect MetaMask → select candidate → cast vote.
 
 Tally results:
-
-powershell
-Copy code
 curl http://127.0.0.1:5000/tally
+
 ✅ Run Tests
-powershell
-Copy code
 npx hardhat test
+
 ⚠️ Notes
 Blockchain ensures immutability but not full privacy.
-
 Voter devices can be compromised.
-
 Only a demo, not production-ready.
 
 📖 References
 Hardhat: https://hardhat.org
-
 OpenZeppelin: https://docs.openzeppelin.com/contracts
-
 MetaMask: https://docs.metamask.io
