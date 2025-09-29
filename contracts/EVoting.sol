@@ -65,20 +65,31 @@ contract EVoting is Ownable {
     }
     
     // Cast vote with encrypted ballot
-    function vote(string memory _encryptedBallot) public {
+    function vote(string memory _candidateName) public {
         require(votingActive, "Voting is not active");
         require(authorizedVoters[msg.sender], "You are not authorized to vote");
         require(!hasVoted[msg.sender], "You have already voted");
-        
-        // Record the encrypted vote
+
+        // Find candidate by name
+        bool found = false;
+        for (uint256 i = 1; i <= candidatesCount; i++) {
+            if (keccak256(bytes(candidates[i].name)) == keccak256(bytes(_candidateName))) {
+                candidates[i].voteCount++;
+                found = true;
+                break;
+            }
+        }
+        require(found, "Candidate not found");
+
+        // Record the vote with plaintext candidate name (for now)
         votes.push(Vote({
             voter: msg.sender,
-            encryptedBallot: _encryptedBallot,
+            encryptedBallot: _candidateName,
             timestamp: block.timestamp
         }));
-        
+
         hasVoted[msg.sender] = true;
-        emit VoteCast(msg.sender, _encryptedBallot, block.timestamp);
+        emit VoteCast(msg.sender, _candidateName, block.timestamp);
     }
     
     // Get candidate details

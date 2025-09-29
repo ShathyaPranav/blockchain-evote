@@ -1,21 +1,33 @@
 // Configuration file for the blockchain e-voting client
 const CONFIG = {
-    // Contract configuration - UPDATE THESE AFTER DEPLOYMENT!
-    CONTRACT_ADDRESS: 'YOUR_CONTRACT_ADDRESS_HERE', // Replace with deployed contract address
+    // Contract configuration
+    CONTRACT_ADDRESS: '0x5FbDB2315678afecb367f032d93F642f64180aa3', // Default Hardhat local network address
     
-    // Network configuration
+    // Network configuration for Hardhat local network
     NETWORK: {
         chainId: '0x7A69', // 31337 in hex (Hardhat local network)
         chainName: 'Hardhat Local',
+        nativeCurrency: {
+            name: 'Ethereum',
+            symbol: 'ETH',
+            decimals: 18
+        },
         rpcUrls: ['http://127.0.0.1:8545'],
-        blockExplorerUrls: ['http://127.0.0.1:8545']
+        blockExplorerUrls: []
     },
     
-    // RSA Public Key for vote encryption - UPDATE THIS!
-    // Generate with: openssl rsa -pubout -in authority_private_key.pem -out authority_public_key.pem
-    // Then copy the content here (including -----BEGIN/END----- lines)
+    // Contract ABI will be loaded from the build artifacts
+    CONTRACT_ABI: [], // Will be populated from the contract JSON file
+    
+    // RSA Public Key for vote encryption (if needed)
     RSA_PUBLIC_KEY: `-----BEGIN PUBLIC KEY-----
-YOUR_PUBLIC_KEY_CONTENT_HERE
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtbYfvg8tc43b1gtnznbZ
+0s3qG4NiN0yKm55g+9tXpD/rMRJJYotrc/eE+z8bwGTCWsjedTq2kQ8tXMsAhorO
+6hy0hEWSe5bM+P/adYfKZJLFke6TjLI/BrVQQBIWp1nkDTOunJQGKKgHCPoeu+63
+RBl36NbNl4rMyZxebc6RSxW1MujV9BI8sOf4hDFyTvn8TYaMJPpJTYQzicHCV7jy
+k5f9S4Uv4aN1RCh0BQyRTPG7K/cnNjo4Llk/5vv/jA596U9o73aoTmIh/SMK1ecy
+blGAW6NU3x9WqLWnM2/9USz/motR3ZTK5VYtehAIyWhGj9OwEknBmNegjgDfv8x5
+2QIDAQAB
 -----END PUBLIC KEY-----`,
     
     // Backend API configuration

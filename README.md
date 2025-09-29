@@ -78,7 +78,38 @@ $env:PROVIDER="http://127.0.0.1:8545"
 python app.py
 ```
 
-### 8. Configure MetaMask
+### 8. Start Client Server
+
+In a new terminal:
+
+```bash
+# In terminal 3
+cd client
+npx http-server
+```
+
+### 9. Access Hardhat Console to Authorize an Account 
+
+To interact with the smart contract directly, open another terminal and run:
+
+```bash
+# In terminal 4
+npx hardhat console --network localhost
+```
+
+In the Hardhat console, you run commands:
+
+```javascript
+// Get contract instance
+const EVoting = await ethers.getContractFactory("EVoting");
+const evoting = await EVoting.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+
+// Authorize a voter (replace with your MetaMask address)
+await evoting.authorizeVoter("YOUR_METAMASK_ADDRESS"); 
+// Example: await evoting.authorizeVoter("0xf39...");
+```
+
+### 10. Configure MetaMask
 
 1. **Add Local Network:**
    - Network Name: `Hardhat Local`
@@ -90,14 +121,14 @@ python app.py
    - Copy a private key from the Hardhat node terminal
    - Import into MetaMask
 
-### 9. Open Voting Interface
+### 11. Open Voting Interface
 
 Open `client/index.html` in your browser and:
 1. Click "Connect MetaMask"
 2. Select a candidate
 3. Cast your vote!
 
-### 10. Tally Results
+### 12. Tally Results
 
 ```powershell
 curl http://127.0.0.1:5000/tally -X POST

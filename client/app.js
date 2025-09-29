@@ -5,7 +5,38 @@ class EVoteApp {
         this.contract = null;
         this.userAccount = null;
         this.selectedCandidate = null;
-        this.init();
+        
+        // Initialize Web3 immediately
+        this.initWeb3().then(() => {
+            this.init();
+        }).catch(error => {
+            console.error('Failed to initialize Web3:', error);
+            this.showMessage('Failed to connect to Web3. Please install MetaMask!', 'error');
+        });
+    }
+
+    async initWeb3() {
+        // Modern dapp browsers
+        if (window.ethereum) {
+            this.web3 = new Web3(window.ethereum);
+            try {
+                // Request account access
+                await window.ethereum.enable();
+                console.log('Web3 initialized with MetaMask');
+            } catch (error) {
+                console.error("User denied account access");
+                throw new Error("Please allow access to your account");
+            }
+        }
+        // Legacy dapp browsers
+        else if (window.web3) {
+            this.web3 = new Web3(web3.currentProvider);
+            console.log('Web3 initialized with legacy provider');
+        }
+        // Non-dapp browsers
+        else {
+            throw new Error('No Web3 provider detected. Please install MetaMask!');
+        }
     }
 
     async init() {
@@ -41,13 +72,13 @@ class EVoteApp {
     async connectWallet() {
         try {
             if (!window.ethereum) {
-                this.showMessage('MetaMask is not installed. Please install MetaMask to continue.', 'error');
+                this.showMessage('Please install MetaMask to continue', 'error');
                 return;
             }
 
             this.showMessage('Connecting to MetaMask...', 'info');
-
-            // Request account access
+            
+            // Request accounts
             const accounts = await window.ethereum.request({
                 method: 'eth_requestAccounts'
             });
@@ -60,19 +91,28 @@ class EVoteApp {
             this.userAccount = accounts[0];
             this.web3 = new Web3(window.ethereum);
 
-            // Check if we're on the correct network
-            const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-            if (chainId !== CONFIG.NETWORK.chainId) {
-                await this.switchNetwork();
+            // Check network
+            const chainId = await this.web3.eth.getChainId();
+            if (chainId.toString() !== '31337') { // 31337 is Hardhat's chain ID
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0x7a69' }], // 0x7a69 is 31337 in hex
+                    });
+                } catch (switchError) {
+                    // Handle network switch error
+                    console.error('Failed to switch network:', switchError);
+                    this.showMessage('Please switch to Hardhat network (Chain ID: 31337)', 'error');
+                    return;
+                }
             }
 
             await this.loadContract();
             await this.updateDisplay();
-            
-            this.showMessage(`Connected to MetaMask: ${this.userAccount}`, 'success');
+            this.showMessage(`Connected: ${this.userAccount}`, 'success');
 
         } catch (error) {
-            console.error('Error connecting wallet:', error);
+            console.error('Connection error:', error);
             this.showMessage(`Failed to connect: ${error.message}`, 'error');
         }
     }
@@ -103,11 +143,16 @@ class EVoteApp {
     async loadContract() {
         try {
             if (!this.web3) {
-                this.web3 = new Web3(CONFIG.NETWORK.rpcUrls[0]);
+                throw new Error('Web3 not initialized');
             }
 
+            // Get the contract ABI
+            const response = await fetch('/build/contracts/EVoting.json');
+            const contractData = await response.json();
+            
+            // Create contract instance
             this.contract = new this.web3.eth.Contract(
-                CONFIG.CONTRACT_ABI,
+                contractData.abi,
                 CONFIG.CONTRACT_ADDRESS
             );
 
@@ -115,6 +160,7 @@ class EVoteApp {
         } catch (error) {
             console.error('Error loading contract:', error);
             this.showMessage('Failed to load smart contract', 'error');
+            throw error;
         }
     }
 
@@ -221,12 +267,12 @@ class EVoteApp {
             this.showMessage('Please select a candidate first', 'error');
             return;
         }
-
+    
         if (!this.userAccount) {
             this.showMessage('Please connect your wallet first', 'error');
             return;
         }
-
+    
         try {
             // Check if user has already voted
             const hasVoted = await this.contract.methods.hasVoted(this.userAccount).call();
@@ -234,33 +280,29 @@ class EVoteApp {
                 this.showMessage('You have already voted!', 'error');
                 return;
             }
-
+    
             // Check if user is authorized
             const isAuthorized = await this.contract.methods.authorizedVoters(this.userAccount).call();
             if (!isAuthorized) {
                 this.showMessage('You are not authorized to vote', 'error');
                 return;
             }
-
-            this.showMessage('Encrypting your vote...', 'info');
-
-            // Encrypt the vote
-            const encryptedVote = await this.encryptVote(this.selectedCandidate.id.toString());
-            if (!encryptedVote) {
-                this.showMessage('Failed to encrypt vote', 'error');
-                return;
-            }
-
-            this.showMessage('Submitting vote to blockchain...', 'info');
-
+    
+            this.showMessage('Preparing your vote...', 'info');
+    
+            // Convert candidate ID to string and send directly (no encryption for now)
+            const voteData = this.selectedCandidate.name; //THIS IS SUPPOSED TO BE AN ID NOT NAME THIS IS SORTA HARDCODED PLS FLAG THIS 
+            
+            console.log('Vote data:', voteData);
+    
             // Submit vote to blockchain
-            const tx = await this.contract.methods.vote(encryptedVote).send({
+            const tx = await this.contract.methods.vote(voteData).send({
                 from: this.userAccount,
-                gas: 200000
+                gas: 500000
             });
-
+    
             console.log('Vote transaction:', tx);
-
+    
             this.showMessage(`Vote cast successfully! Transaction: ${tx.transactionHash}`, 'success');
             
             // Update display
@@ -269,10 +311,18 @@ class EVoteApp {
             // Disable voting
             document.getElementById('vote-button').disabled = true;
             document.getElementById('vote-button').textContent = 'Vote Cast ✓';
-
+    
         } catch (error) {
+            console.error('Voting error:', {
+                message: error.message,
+                code: error.code,
+                data: error.data
+            });
+            this.showMessage(`Voting failed: ${error.message}`, 'error');
+        }
+        /*catch (error) {
             console.error('Error casting vote:', error);
-            let errorMessage = 'Failed to cast vote';
+            let errorMessage = error.message || 'Failed to cast vote';
             
             if (error.message.includes('revert')) {
                 if (error.message.includes('already voted')) {
@@ -285,10 +335,10 @@ class EVoteApp {
             }
             
             this.showMessage(errorMessage, 'error');
-        }
+        }*/
     }
 
-    async encryptVote(candidateId) {
+    /*async encryptVote(candidateId) {
         try {
             // For demo purposes, we'll use a simple base64 encoding
             // In a real implementation, you'd use proper RSA encryption
@@ -302,7 +352,7 @@ class EVoteApp {
             console.error('Error encrypting vote:', error);
             return null;
         }
-    }
+    }*/
 
     async updateStats() {
         try {
