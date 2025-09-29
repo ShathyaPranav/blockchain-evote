@@ -150,13 +150,17 @@ class EVoteApp {
             const response = await fetch('/build/contracts/EVoting.json');
             const contractData = await response.json();
             
+            // Always use the address from config, not from the deployment artifacts
+            const contractAddress = CONFIG.CONTRACT_ADDRESS;
+            console.log('Loading contract with address:', contractAddress);
+            
             // Create contract instance
             this.contract = new this.web3.eth.Contract(
                 contractData.abi,
-                CONFIG.CONTRACT_ADDRESS
+                contractAddress
             );
 
-            console.log('Contract loaded:', CONFIG.CONTRACT_ADDRESS);
+            console.log('Contract loaded at:', contractAddress);
         } catch (error) {
             console.error('Error loading contract:', error);
             this.showMessage('Failed to load smart contract', 'error');
@@ -192,6 +196,7 @@ class EVoteApp {
         const networkElement = document.getElementById('network-info');
         const statusElement = document.getElementById('voting-status');
 
+        console.log('Using contract address from config:', CONFIG.CONTRACT_ADDRESS);
         addressElement.textContent = CONFIG.CONTRACT_ADDRESS;
 
         if (this.contract) {
@@ -211,26 +216,46 @@ class EVoteApp {
         
         if (!this.contract) {
             candidatesElement.innerHTML = '<p>Contract not loaded</p>';
+            console.error('Contract instance is not available');
             return;
         }
 
         try {
+            console.log('Fetching candidates from contract...');
             const candidates = await this.contract.methods.getAllCandidates().call();
+            console.log('Candidates received:', candidates);
             
-            if (candidates.length === 0) {
-                candidatesElement.innerHTML = '<p>No candidates available</p>';
+            if (!candidates || candidates.length === 0) {
+                candidatesElement.innerHTML = '<p>No candidates available. Have you added any candidates to the contract?</p>';
+                console.warn('No candidates found in the contract');
                 return;
             }
 
             let html = '';
-            candidates.forEach(candidate => {
-                html += `
-                    <div class="candidate-card" onclick="app.selectCandidate(${candidate.id}, '${candidate.name}')">
-                        <div class="candidate-name">${candidate.name}</div>
-                        <div class="candidate-id">Candidate ID: ${candidate.id}</div>
-                    </div>
-                `;
+            candidates.forEach((candidate, index) => {
+                console.log(`Processing candidate ${index + 1}:`, candidate);
+                // The candidate is an array where:
+                // candidate[0] = id (BigNumber)
+                // candidate[1] = name (string)
+                // candidate[2] = voteCount (BigNumber)
+                const candidateId = candidate[0];
+                const candidateName = candidate[1];
+                const voteCount = candidate[2];
+                
+                if (candidateId && candidateName) {
+                    html += `
+                        <div class="candidate-card" onclick="app.selectCandidate('${candidateId}', '${candidateName.replace(/'/g, "\'")}')">
+                            <div class="candidate-name">${candidateName}</div>
+                            <div class="candidate-id">Candidate ID: ${candidateId}</div>
+                            <div class="vote-count">Votes: ${voteCount}</div>
+                        </div>
+                    `;
+                }
             });
+
+            if (html === '') {
+                throw new Error('No valid candidates found in the response');
+            }
 
             candidatesElement.innerHTML = html;
 
