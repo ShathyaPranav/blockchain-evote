@@ -88,6 +88,8 @@ cd client
 npx http-server
 ```
 
+Then go to http://localhost:8080 in a browser
+
 ### 9. Access Hardhat Console to Authorize an Account 
 
 To interact with the smart contract directly, open another terminal and run:
