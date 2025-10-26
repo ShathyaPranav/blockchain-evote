@@ -19,7 +19,7 @@ Install these tools first:
 ### 1. Clone and Install Dependencies
 
 ```powershell
-git clone https://github.com/ishanvikaushik/blockchain-evote.git
+git clone https://github.com/ShathyaPranav/blockchain-evote.git
 cd blockchain-evote
 npm install
 ```
