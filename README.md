@@ -226,7 +226,34 @@ cd client
 python -m http.server 8000
 ```
 
+<<<<<<< HEAD
 ### 5. Configure MetaMask
+=======
+Then go to http://localhost:8080 in a browser
+
+### 9. Access Hardhat Console to Authorize an Account 
+
+To interact with the smart contract directly, open another terminal and run:
+
+```bash
+# In terminal 4
+npx hardhat console --network localhost
+```
+
+In the Hardhat console, you run commands:
+
+```javascript
+// Get contract instance
+const EVoting = await ethers.getContractFactory("EVoting");
+const evoting = await EVoting.attach("0x5FbDB2315678afecb367f032d93F642f64180aa3");
+
+// Authorize a voter (replace with your MetaMask address)
+await evoting.authorizeVoter("YOUR_METAMASK_ADDRESS"); 
+// Example: await evoting.authorizeVoter("0xf39...");
+```
+
+### 10. Configure MetaMask
+>>>>>>> a8be0e7f7a501a99bb048fc1e607a1856fd23b5e
 
 1. **Add Local Network:**
    - Network Name: `Hardhat Local`
