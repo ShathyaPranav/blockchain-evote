@@ -225,6 +225,16 @@ In a new terminal:
 cd client
 python -m http.server 8000
 ```
+Then 
+
+In a new terminal:
+
+```bash
+# In terminal 3
+cd backend
+.\venv\Scripts\activate      
+python app.py
+```
 
 <<<<<<< HEAD
 ### 5. Configure MetaMask
