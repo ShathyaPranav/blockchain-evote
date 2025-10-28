@@ -232,7 +232,8 @@ In a new terminal:
 ```bash
 # In terminal 3
 cd backend
-.\venv\Scripts\activate      
+.\venv\Scripts\activate
+pip install -r requirements.txt     
 python app.py
 ```
 
